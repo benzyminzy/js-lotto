@@ -173,10 +173,10 @@ const _LottoPrizes = class _LottoPrizes {
     __privateGet(this, _prizes).forEach((prize) => {
       const matchedLotto = matchedResults.filter((result) => {
         const isMatchCountEqual = result.matchCount === prize.requiredMatchCount;
-        const isBonusMatchValid = !prize.bonusMatched || result.bonusMatched === prize.bonusMatched;
+        const isBonusMatchValid = prize.bonusMatched === result.bonusMatched;
         return isMatchCountEqual && isBonusMatchValid;
       });
-      prize.matchCount += matchedLotto.length;
+      prize.matchCount = matchedLotto.length;
     });
   }
   get status() {
@@ -245,7 +245,7 @@ const _LottoGame = class _LottoGame {
   getMatchedResults(winningNumbers, bonusNumbers) {
     return __privateGet(this, _lottos).map((lottos) => {
       const matchCount = lottos.getMatchCount(winningNumbers);
-      const bonusMatched = !!lottos.getMatchCount([bonusNumbers]);
+      const bonusMatched = !!lottos.getMatchCount(bonusNumbers);
       return { matchCount, bonusMatched };
     });
   }
@@ -502,13 +502,14 @@ function showResultModal({ text, onClick, rows }) {
   document.body.appendChild(modal);
 }
 function updatePurchasedResultView(quantity, purchasedLottos) {
+  removePurchaseResult();
   showPurchaseResultStep();
   printPurchaseResult(quantity, purchasedLottos);
 }
 function openResultModal({ rate, results, onClick }) {
   const convertedResults = results.map((result) => {
     return [
-      `${result.matchCount}개 일치${result.bonusMatched ? " + 보너스볼" : ""}`,
+      `${result.requiredMatchCount}개 일치${result.bonusMatched ? " + 보너스볼" : ""}`,
       result.prizeMoney.toLocaleString(),
       result.matchCount
     ];
@@ -541,11 +542,11 @@ function resetGame() {
   resetPurchaseResult();
   return newGame;
 }
-function showResults(rate, results) {
+function showResults(rate, results, callback) {
   openResultModal({
     rate,
     results,
-    onClick: resetGame
+    onClick: callback
   });
 }
 function initializeGame() {
@@ -557,7 +558,9 @@ function initializeGame() {
     onSubmit: (winningNumbers, bonusNumbers) => handleError(() => {
       const results = drawLottos(lottoGame, winningNumbers, bonusNumbers);
       const rate = lottoGame.getReturnRate();
-      showResults(rate, results);
+      showResults(rate, results, () => {
+        lottoGame = resetGame();
+      });
     })
   });
 }
