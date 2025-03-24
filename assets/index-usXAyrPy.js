@@ -227,7 +227,7 @@ const _LottoGame = class _LottoGame {
     __privateSet(this, _prizes2, prizes ?? new LottoPrizes());
   }
   static validatePurchaseAmount(purchaseAmount, price) {
-    if (!Number.isInteger(purchaseAmount) || purchaseAmount < 0 || purchaseAmount % price !== 0) {
+    if (!Number.isInteger(purchaseAmount) || purchaseAmount <= 0 || purchaseAmount % price !== 0) {
       throw new LottoPurchaseError(price);
     }
   }
@@ -315,7 +315,7 @@ const _BonusNumbers = class _BonusNumbers extends AbstractLottoNumbers {
 };
 __publicField(_BonusNumbers, "BONUS_NUMBER_COUNT", 1);
 let BonusNumbers = _BonusNumbers;
-function validateNumericInput(input, maxLength) {
+function sanitizeNumericInput(input, maxLength) {
   input.value = input.value.replace(/[^0-9]/g, "").slice(0, maxLength);
 }
 function setForm(form, onSubmit) {
@@ -332,7 +332,7 @@ function setupPurchaseForm(onSubmit) {
     onSubmit(purchaseAmount);
   });
   const input = form.querySelector("input");
-  input.addEventListener("input", () => validateNumericInput(input, 6));
+  input.addEventListener("input", () => sanitizeNumericInput(input, 6));
 }
 function setupDrawNumbersForm(onSubmit) {
   const form = document.querySelector(".draw-numbers-section form");
@@ -343,7 +343,7 @@ function setupDrawNumbersForm(onSubmit) {
   });
   const inputs = form.querySelectorAll("input");
   inputs.forEach((input) => {
-    input.addEventListener("input", () => validateNumericInput(input, 2));
+    input.addEventListener("input", () => sanitizeNumericInput(input, 2));
   });
 }
 function resetForms() {
